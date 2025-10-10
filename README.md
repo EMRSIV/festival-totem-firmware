@@ -1,8 +1,16 @@
-## Features
+# Festival Totem Firmware
 
 
 
-## Pin Diagram
+
+## Hardware
+
+- ESP32-C3 Super Mini Microcontroller
+- MCP23017 I2C port expander (for more GPIOs)
+- Outputs: 2x WS2812 LED strips
+- Inputs:
+  - 5x [EC11 Rotary Encoders](https://www.amazon.de/WayinTop-Potentiometer-Drehwinkelgeber-Automobilelektronik-Multimedia-Audio/dp/B08728PS6N) (with push button)
+  - 1x [Linear Potentiometer](https://www.amazon.de/Schiebepotentiometer-Zweikanaliger-gerader-Schiebemischer-mehrere/dp/B09PBXB47T/ref=sr_1_33?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&sr=8-33) B10k (B103)
 
 ### ESP-C3 Super Mini
 
@@ -12,6 +20,7 @@
 - GPIO20 <-> WS2812 LED Strip 1 (Data)
 - GPIO21 <-> WS2812 LED Strip 2 (Data)
 
+```
                         ESP-C3 Super Mini
                         ┌──────---──────┐
                     5V  │5V            5│ - GPIO5
@@ -23,7 +32,7 @@
                   GPIO1 │1            20│ - GPIO20 (RX) ---- WS2812
  B10K (B103) ---- GPIO0 │0            21│ - GPIO21 (TX) ---- WS2812
                         └───────────────┘
-
+```
 
 ### MCP23017
 
@@ -33,6 +42,7 @@
   - Der mitllere der 3 rotary pins ist ebenfalls and GND angeschlossen
   - Die beiden rotary pins sind am MCP23017 angeschlossen
 
+```
                             MCP23017
                         ┌──────---──────┐
                  GPB0 - │1            28│ - GPA7
@@ -50,6 +60,7 @@
    ESP[SDA] ---- SDA  - │13           16│ - A1    ---- GND
                  NC   - │14           15│ - A0    ---- GND
                         └───────────────┘
+```
 
 ### [EC11 Rotary Encoder](https://arduino-projekte.info/products/ec11-rotary-encoder)
 
@@ -59,9 +70,13 @@
 - B <-> MCP23017[GPBx] (use B0...4)
 - C <-> GND
 
+```
                               EC11
                         ┌───────────────┐
                  GND  - │GND           A│ - MCP23017[GPAx]
+                        │               │
                         │    Bottom    C│ - GND
+                        │               │
       MCP23017[GP..]  - │SW            B│ - MCP23017[GPBx]
                         └───────────────┘
+```
