@@ -1,18 +1,39 @@
-# Festival Totem Firmware
 
-
+<h1><img src="firmware.elf.png" alt="Logo" width="30"/> Festival Totem Firmware <img src="firmware.elf.png" alt="Logo" width="30"/></h1>
 
 
 ## Hardware
 
-- ESP32-C3 Super Mini Microcontroller
-- MCP23017 I2C port expander (for more GPIOs)
+- ESP32-WROOM-32D N4
 - Outputs: 2x WS2812 LED strips
 - Inputs:
   - 5x [EC11 Rotary Encoders](https://www.amazon.de/WayinTop-Potentiometer-Drehwinkelgeber-Automobilelektronik-Multimedia-Audio/dp/B08728PS6N) (with push button)
   - 1x [Linear Potentiometer](https://www.amazon.de/Schiebepotentiometer-Zweikanaliger-gerader-Schiebemischer-mehrere/dp/B09PBXB47T/ref=sr_1_33?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&sr=8-33) B10k (B103)
 
-### ESP-C3 Super Mini
+### PCB Layout
+
+```
+┌─────────────┐
+│ Poti   Enc1 │
+│┌───┐  ┌───┐ │
+││ │ │  | ◯ | │
+││ │ │  └───┘ │
+││ │ |   Enc2 │
+││ │ │  ┌───┐ │
+││ │ │  | ◯ | │
+│| │ |  └───┘ │
+││ │ |   Enc3 │
+││ │ │  ┌───┐ │
+││ │ │  | ◯ | │
+│└───┘  └───┘ │
+│ Enc5   Enc4 │
+│┌───┐  ┌───┐ │
+││ ◯ │  | ◯ | │
+│└───┘  └───┘ │
+└─────────────┘
+```
+
+### ESP32-WROOM-32D N4
 
 - GPIO7 <-> MCP23017[SCL]
 - GPIO6 <-> MCP23017[SDA]
@@ -21,62 +42,45 @@
 - GPIO21 <-> WS2812 LED Strip 2 (Data)
 
 ```
-                        ESP-C3 Super Mini
-                        ┌──────---──────┐
-                    5V  │5V            5│ - GPIO5
-                   GND  │GND    Back   6│ - GPIO6 (SDA) ---- MCP23017[SDA]
-                   3V3  │3.3           7│ - GPIO7 (SCL) ---- MCP23017[SCL]
-                  GPIO4 │4             8│ - GPIO8
-                  GPIO3 │3             9│ - GPIO9
-                  GPIO2 │2            10│ - GPIO10
-                  GPIO1 │1            20│ - GPIO20 (RX) ---- WS2812
- B10K (B103) ---- GPIO0 │0            21│ - GPIO21 (TX) ---- WS2812
-                        └───────────────┘
+                         ESP32-WROOM-32D N4
+                        ┌───────---───────┐
+                  3V3 - │3V3            VN│ -
+                  GND - │GND    Top    GND│ -
+                        │D15           D13│ - Enc1 A
+                        │D2            D12│ -
+                        │D4            D14│ - Enc1 B
+              Enc 2 A - │D16           D27│ - LED 2 DATA
+              Enc 2 B - │D17           D26│ - LED 1 DATA
+                        │D5            D25│ - Enc 5 B
+              Enc 4 A - │D18           D33│
+              Enc 4 B - |D19           D32│
+              Enc 3 A - |D21           D35│
+                        |RX0           D34│
+                        |TX0            VN│
+              Enc 3 B - |D22            VP│ - Poti B10K (B103)
+              Enc 5 A - |D23            EN│
+                        └─────────────────┘
 ```
 
-### MCP23017
-
--
-  - AM MCP23017 sind 5 der folgende Encoder angeschlossen:
-  - An den Encodern ist jeweils einer der Taster Pins an GND angschlossen, der andere Pin geht jeweils zum MCP23017
-  - Der mitllere der 3 rotary pins ist ebenfalls and GND angeschlossen
-  - Die beiden rotary pins sind am MCP23017 angeschlossen
-
-```
-                            MCP23017
-                        ┌──────---──────┐
-                 GPB0 - │1            28│ - GPA7
-                 GPB1 - │2            27│ - GPA6
-                 GPB2 - │3            26│ - GPA5
-                 GPB3 - │4            25│ - GPA4
-                 GPB4 - │5            24│ - GPA3
-                 GPB5 - │6            23│ - GPA2
-                 GPB6 - │7            22│ - GPA1
-                 GPB7 - │8            21│ - GPA0  ---- EC11(0)[A]
-                 VDD  - │9            20│ - INTA
-                 VSS  - │10           19│ - INTB
-                 NC   - │11           18│ - RESET ---- 3V3
-   ESP[SCL] ---- SCL  - │12           17│ - A2    ---- GND
-   ESP[SDA] ---- SDA  - │13           16│ - A1    ---- GND
-                 NC   - │14           15│ - A0    ---- GND
-                        └───────────────┘
-```
-
-### [EC11 Rotary Encoder](https://arduino-projekte.info/products/ec11-rotary-encoder)
+### EC11 Rotary Encoder
 
 - GND <-> GND
-- SW <-> MCP23017[GP..] (use A5/6/7 and B5/6)
-- A <-> MCP23017[GPAx] (use A0...4)
-- B <-> MCP23017[GPBx] (use B0...4)
+- SW <-> ESP GPIO?
+- A <-> ESP GPIO?
+- B <-> ESP GPIO?
 - C <-> GND
 
 ```
                               EC11
                         ┌───────────────┐
-                 GND  - │GND           A│ - MCP23017[GPAx]
+                 GND  - │GND           A│ - ESP GPIO
                         │               │
                         │    Bottom    C│ - GND
                         │               │
-      MCP23017[GP..]  - │SW            B│ - MCP23017[GPBx]
+            ESP GPIO  - │SW            B│ - ESP GPIO
                         └───────────────┘
 ```
+
+<img src="firmware.elf.png" alt="Logo" width="400"/>
+
+Greetings from Firmware.elf

@@ -1,0 +1,40 @@
+# Encoder (ESP32/Arduino)
+
+Quadrature EC11 encoder + push button helper for ESP32 (Arduino-ESP32).
+
+Features:
+- CHANGE interrupts on A & B (state-table decoder)
+- Button debounce in `update()`
+- Callbacks: `onPress`, `onRelease`
+- Detent divisor (2 or 4 transitions per click)
+
+## Wiring (example)
+- A → GPIO21
+- B → GPIO22
+- SW → GPIO25
+- C → GND
+- Other SW pin → GND
+
+## Usage
+```cpp
+#include <Arduino.h>
+#include <Encoder.h>
+
+Encoder enc(21, 22, 25, true, 4, 10);
+
+void setup() {
+  Serial.begin(115200);
+  enc.onPress([]{ Serial.println("PRESS"); });
+  enc.onRelease([]{ Serial.println("RELEASE"); });
+  enc.begin();
+}
+
+void loop() {
+  enc.update();
+  static int32_t last = 0;
+  int32_t d = enc.getDetentCount();
+  if (d != last) {
+    Serial.print("detents="); Serial.println(d);
+    last = d;
+  }
+}
