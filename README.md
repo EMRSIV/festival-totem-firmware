@@ -1,6 +1,45 @@
 
 <h1><img src="firmware.elf.png" alt="Logo" width="30"/> Festival Totem Firmware <img src="firmware.elf.png" alt="Logo" width="30"/></h1>
 
+Continue:
+https://chatgpt.com/c/68fa7fba-aa5c-8329-8544-3c31ef0e5c5c
+
+
+TODO for V0.0.1
+- If the Strobe button (enc5) is pressed down and the user rotates enc1 the strobe color hue should change. And if enc1 is also pressed down at the same time the strobe color saturation should change.
+- If enc4 (intensity) is pressed down special effect 2 should be activated (like a flashbang)
+...
+
+## Special Effects
+
+enc5 (Press down): Strobe
+enc4 (Press down): Energy Buildup Flash
+enc3 (Press down): [Open Slot]
+enc2 No special effect possible
+enc1 No special effect possible
+
+Normal Effects:
+- Solid Color (Two colors static)
+- Ambulance Light (Blue/Red Flash)
+
+
+## Controls
+🎛 Controls Working Exactly as Intended
+| Control | Mode                     | Result                     |
+|---------|--------------------------|----------------------------|
+| Enc1    | turn                     | Main hue                   |
+| Enc1    | hold + turn              | Main saturation            |
+| Enc2    | turn                     | Secondary hue              |
+| Enc2    | hold + turn              | Secondary saturation       |
+| Enc2    | press                    | Toggle secondary ON/OFF    |
+| Enc3    | turn                     | Effect switch              |
+| Enc4    | turn                     | Intensity                  |
+| Enc5    | turn                     | Speed                      |
+| Enc5    | press & hold             | Strobe ON instantly        |
+| Enc5    | rotate while pressed     | Strobe speed adjust        |
+| Pot     | move                     | Brightness                 |
+
+Interaction feels snappy + musical 🎶
 
 ## Hardware
 
@@ -79,7 +118,14 @@
                         │               │
             ESP GPIO  - │SW            B│ - ESP GPIO
                         └───────────────┘
+
 ```
+
+
+
+Backlog:
+- Add small speaker for audio feedback that matches the effects.
+- [Auto Hupe für den Krankenwagen Blaulicht Effekt](https://www.youtube.com/watch?v=Dqc6yRIHiW0)
 
 <img src="firmware.elf.png" alt="Logo" width="400"/>
 
