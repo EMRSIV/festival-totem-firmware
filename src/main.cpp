@@ -4,13 +4,16 @@
 #include "LightingParams.h"
 #include "SpatialMap.h"
 #include "EffectManager.h"
-#include "SolidColorEffect.h"
-#include "SpatialWaveEffect.h"
+
 #include "InputManager.h"
 #include "InputMapper.h"
 #include "Pot.h"
 #include "LedEngine.h"
 #include "SerialHUD.h"
+
+#include "SolidColorEffect.h"
+#include "SpatialWaveEffect.h"
+#include "DoubleHelixEffect.h"
 
 // ============ LED Setup ============
 
@@ -53,6 +56,7 @@ InputMapper mapper;
 EffectManager fx;
 SolidColorEffect solidFx;
 SpatialWaveEffect waveFx;
+DoubleHelixEffect helixFx;
 
 // Lighting state
 LightingParams P;
@@ -124,6 +128,7 @@ void setup()
 
     fx.add(&solidFx, "Solid");
     fx.add(&waveFx, "Wave");
+    fx.add(&helixFx, "Helix");
 
     hud.begin();
 
