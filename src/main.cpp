@@ -1,161 +1,174 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include <Encoder.h>
+#include "LightingParams.h"
+#include "SpatialMap.h"
+#include "EffectManager.h"
+#include "SolidColorEffect.h"
+#include "SpatialWaveEffect.h"
+#include "InputManager.h"
+#include "InputMapper.h"
 #include "Pot.h"
 #include "LedEngine.h"
+#include "SerialHUD.h"
 
-// ===================== Pins & lengths =====================
-#define LED_PIN1 26
-#define LED_PIN2 27
-#define NUM_LEDS_1 2
-#define NUM_LEDS_2 300
+// ============ LED Setup ============
 
-#define POT_PIN 36 // ADC1_CH0
+#define MAIN_COUNT 2
+#define DETAIL_COUNT 300
 
-// ===================== Encoders =====================
-static const uint8_t DETENT_TRANSITIONS = 4;
-static const uint16_t DEBOUNCE_MS = 10;
+CRGB mainLeds[MAIN_COUNT];
+CRGB detailLeds[DETAIL_COUNT];
 
-Encoder enc1(13, 14, 0, true, DETENT_TRANSITIONS, DEBOUNCE_MS);  // HUE
-Encoder enc2(16, 17, 32, true, DETENT_TRANSITIONS, DEBOUNCE_MS); // BRIGHTNESS
-Encoder enc3(21, 22, 4, true, DETENT_TRANSITIONS, DEBOUNCE_MS);  // SPEED
-Encoder enc4(18, 19, 5, true, DETENT_TRANSITIONS, DEBOUNCE_MS);  // EFFECT SELECT
-Encoder enc5(23, 25, 15, true, DETENT_TRANSITIONS, DEBOUNCE_MS); // SATURATION
+LedEngine ledEngine(mainLeds, MAIN_COUNT, detailLeds, DETAIL_COUNT);
 
-Encoder *ENCS[] = {&enc1, &enc2, &enc3, &enc4, &enc5};
-int32_t lastDet[5] = {0, 0, 0, 0, 0};
+SerialHUD hud;
 
-// ===================== LEDs =====================
-CRGB leds1[NUM_LEDS_1];
-CRGB leds2[NUM_LEDS_2];
-LedEngine engine(LED_PIN1, NUM_LEDS_1, leds1,
-                 LED_PIN2, NUM_LEDS_2, leds2);
+// Power safety
+static const uint16_t MAX_MA = 1500;
 
-static const uint16_t MAX_MA = 2000; // PSU power supply limit (keep a 300mA margin)
+// ============ Spatial Map ============
+SpatialMap spatial(DETAIL_COUNT, 10, 10.0f, 3.0f, true);
 
-// Parameters we’ll control generically
-LedParams P;
+// ============ Encoders ============
+static const uint8_t DET = 4, DB = 10;
 
-// ===================== Pot =====================
-Pot pot(POT_PIN, 12, ADC_11db, 0.12f);
+Encoder enc1(13, 14, 0, true, DET, DB);
+Encoder enc2(16, 17, 32, true, DET, DB);
+Encoder enc3(21, 22, 4, true, DET, DB);
+Encoder enc4(18, 19, 5, true, DET, DB);
+Encoder enc5(23, 25, 15, true, DET, DB);
 
-// ===================== Helpers =====================
-template <typename T>
-static inline T clampv(T v, T lo, T hi) { return v < lo ? lo : (v > hi ? hi : v); }
+Encoder *encs[] = {&enc1, &enc2, &enc3, &enc4, &enc5};
 
-// Map detent delta from an encoder into a parameter with step size
-static void applyDetentDeltaToParam(int encIdx, int delta)
+// ============ Pot ============
+#define POT_PIN 36
+Pot pot(POT_PIN);
+
+// ============ Input system ============
+InputManager input(encs, 5, &pot);
+InputMapper mapper;
+
+// ============ Effects ============
+EffectManager fx;
+SolidColorEffect solidFx;
+SpatialWaveEffect waveFx;
+
+// Lighting state
+LightingParams P;
+
+// ============ Boot Animation ============
+uint8_t bootHue = 0;
+uint32_t bootStart;
+bool bootActive = true;
+
+void bootAnimation(uint32_t now)
 {
-    switch (encIdx)
+    if (!bootActive)
+        return;
+    if (now - bootStart > 3000)
     {
-    case 0:                                   // HUE
-        P.hue = (uint8_t)(P.hue + delta * 3); // 3 per detent
-        break;
-    case 1: // BRIGHTNESS
-        P.brightness = clampv<int>(P.brightness + delta * 5, 0, 255);
-        FastLED.setBrightness(P.brightness);
-        break;
-    case 2: // SPEED
-        P.speed = clampv<int>(P.speed + delta * 4, 0, 255);
-        break;
-    case 3: // EFFECT SELECT
-        if (delta > 0)
-            engine.nextEffect(delta);
-        else if (delta < 0)
-            engine.prevEffect(-delta);
-        break;
-    case 4: // SATURATION
-        P.sat = clampv<int>(P.sat + delta * 5, 0, 255);
-        break;
+        bootActive = false;
+        ledEngine.clearAll();
+        FastLED.show();
+        return;
     }
+    fill_rainbow(mainLeds, MAIN_COUNT, bootHue, 8);
+    fill_rainbow(detailLeds, DETAIL_COUNT, bootHue + 64, 4);
+    bootHue++;
+    FastLED.show();
 }
 
-// Button actions (press = next effect, long press could be added later)
-static void attachButtonCallbacks()
+// ============ Strobe Overlay ============
+static inline uint16_t strobePeriodMs(uint8_t s)
 {
-    // Enc4 button: next effect
-    ENCS[3]->onPress([]
-                     {
-                         // single press also cycles effect by 1
-                         // (encoder rotation also changes effect via applyDetentDeltaToParam)
-                         // Using nextEffect keeps UX consistent.
-                     });
-    // Enc1 press: reset hue to 0
-    ENCS[0]->onPress([] { /* placeholder if you want special actions */ });
-    // Add more as you like…
+    // 255 -> ~30ms, 0 -> ~1000ms
+    return (uint16_t)(1000 - (s * 970) / 255) + 30;
 }
 
-// ===================== Setup =====================
+void applyStrobe(uint32_t now)
+{
+    if (!P.strobe)
+        return;
+
+    const uint16_t period = strobePeriodMs(P.strobeSpeed);
+    const bool on = (now % period) < (period / 2);
+
+    if (on)
+    {
+        // Option C: main = white flash, detail off
+        fill_solid(mainLeds, MAIN_COUNT, CRGB::White);
+        fill_solid(detailLeds, DETAIL_COUNT, CRGB::Black);
+    }
+    else
+    {
+        // Off phase: keep detail off, main off too
+        fill_solid(mainLeds, MAIN_COUNT, CRGB::Black);
+        fill_solid(detailLeds, DETAIL_COUNT, CRGB::Black);
+    }
+    // DO NOT call FastLED.show() here; main loop shows once after overlays.
+}
+
+// ================= MAIN =================
 void setup()
 {
     Serial.begin(115200);
-    Serial.println("\nLED Controller Boot");
 
-    // Encoders
-    for (uint8_t i = 0; i < 5; ++i)
-    {
-        ENCS[i]->begin();
-        lastDet[i] = ENCS[i]->getDetentCount();
-    }
-    attachButtonCallbacks();
-
-    // Pot
+    input.begin();
     pot.begin();
 
-    // FastLED setup (must be here, not inside LedEngine.cpp because of template pins)
-    FastLED.addLeds<NEOPIXEL, LED_PIN1>(leds1, NUM_LEDS_1);
-    FastLED.addLeds<NEOPIXEL, LED_PIN2>(leds2, NUM_LEDS_2);
-    FastLED.setBrightness(P.brightness);
+    ledEngine.begin();
+    ledEngine.setPowerLimit(5, MAX_MA);
 
-    engine.setPowerLimit(5, MAX_MA);
+    spatial.begin();
 
-    // Boot animation
-    engine.setParams(P);
-    engine.restartBoot(millis());
+    fx.add(&solidFx, "Solid");
+    fx.add(&waveFx, "Wave");
+
+    hud.begin();
+
+    bootStart = millis();
 }
 
-// ===================== Loop =====================
 void loop()
 {
-    // Update inputs
-    for (uint8_t i = 0; i < 5; ++i)
-        ENCS[i]->update();
-    pot.update();
+    uint32_t now = millis();
 
-    // Handle encoder detent deltas
-    for (uint8_t i = 0; i < 5; ++i)
+    // Boot
+    if (bootActive)
     {
-        int32_t d = ENCS[i]->getDetentCount();
-        int delta = (int)(d - lastDet[i]);
-        if (delta != 0)
+        bootAnimation(now);
+        return;
+    }
+
+    // Read input
+    InputEvent ev;
+    if (input.poll(ev))
+    {
+        if (mapper.apply(ev, P))
         {
-            applyDetentDeltaToParam(i, delta);
-            lastDet[i] = d;
-            Serial.print("[ENC");
-            Serial.print(i + 1);
-            Serial.print("] delta=");
-            Serial.print(delta);
-            Serial.print("  -> (H:");
-            Serial.print(P.hue);
-            Serial.print(", S:");
-            Serial.print(P.sat);
-            Serial.print(", B:");
-            Serial.print(P.brightness);
-            Serial.print(", V:");
-            Serial.print(P.speed);
-            Serial.println(")");
+            // Wrap to #effects
+            P.effectID %= fx.count();
+            if (fx.setEffect(P.effectID))
+            {
+                hud.markDirty();
+            }
         }
     }
 
-    // Map pot (0..255) to brightness (or whatever you prefer)
-    uint8_t pot8 = pot.value8();
-    // Example: make pot master brightness (overriding encoder)
-    P.brightness = pot8;
     FastLED.setBrightness(P.brightness);
 
-    // Push params into engine & render
-    engine.setParams(P);
-    engine.update(millis());
+    // Render base effect
+    fx.setEffect(P.effectID);
+    fx.render(P, spatial,
+              mainLeds, MAIN_COUNT,
+              detailLeds, DETAIL_COUNT,
+              now);
 
-    delay(2);
+    hud.update(P, fx, now);
+
+    // Apply overlays (strobe)
+    applyStrobe(now);
+
+    FastLED.show();
 }

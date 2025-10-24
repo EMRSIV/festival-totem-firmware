@@ -36,6 +36,11 @@ public:
     void onPress(Callback cb) { pressCB = cb; }
     void onRelease(Callback cb) { releaseCB = cb; }
 
+    bool getButtonStateRaw() const
+    {
+        return digitalRead(SW); // Returns HIGH when released, LOW when pressed
+    }
+
 private:
     // Pins
     const uint8_t A, B, SW;
