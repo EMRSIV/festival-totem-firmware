@@ -12,7 +12,6 @@
 #include "LedEngine.h"
 #include "SerialHUD.h"
 
-#include "SolidColorEffect.h"
 #include "SpatialWaveEffect.h"
 #include "DoubleHelixEffect.h"
 #include "EnergyBurstEffect.h"
@@ -63,7 +62,6 @@ ConfigManager configMgr;
 
 // ============ Effects ============
 EffectManager fx;
-SolidColorEffect solidFx;
 SpatialWaveEffect waveFx;
 DoubleHelixEffect helixFx;
 EnergyBurstEffect energyBurstFx;
@@ -195,7 +193,6 @@ void setup()
     P.effectID = configMgr.getBootEffectID();
 
     // Register effects
-    fx.add(&solidFx, "Solid");
     fx.add(&waveFx, "Wave");
     fx.add(&helixFx, "Helix");
 
