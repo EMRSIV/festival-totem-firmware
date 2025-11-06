@@ -24,7 +24,7 @@ public:
 
         // Accumulate phase based on speed
         float speedFactor = P.speed() / 255.0f;
-        phase += deltaTime * speedFactor * 5.0f; // 5.0 multiplier for visible speed
+        phase += deltaTime * speedFactor * 10.0f; // 10.0 multiplier for doubled speed
 
         // Keep phase in reasonable range
         if (phase > TWO_PI * 100.0f)
