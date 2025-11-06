@@ -5,25 +5,28 @@ enum class InputAction
 {
     None = 0,
 
-    // Primary adjustments
+    // Primary adjustments (routed to activeConfig)
     MainHueAdjust,
-    MainSatAdjust, // Enc1 hold
+    MainSatAdjust,
     SecondaryHueAdjust,
-    SecondarySatAdjust, // Enc2 hold
+    SecondarySatAdjust,
     IntensityAdjust,
-    Special1Adjust, // Enc4 hold
     SpeedAdjust,
-    Special2Adjust, // Enc5 hold
 
-    // Strobe
-    StrobeHoldStart,   // begin hold
-    StrobeHoldEnd,     // release
-    StrobeSpeedAdjust, // Enc5 rotate while holding
+    // Mode switching
+    EnterSpecial1, // Enc5 press: Activate strobe
+    ExitSpecial1,  // Enc5 release: Deactivate strobe
+    EnterSpecial2, // Enc4 press: Start/advance energy burst
+    EnterSpecial3, // Enc3 press: Activate emergency lights
+    ExitSpecial3,  // Enc3 release: Deactivate emergency lights
 
-    // Toggles
-    ToggleSecondaryColor, // Enc2 press
+    // Special combo
+    SaveConfigs, // Enc4 + Enc5 held 5s: Save all configs to NVS
 
-    // Navigator
+    // Toggles (mode-dependent)
+    ToggleSecondaryColor, // Enc2 press (only in Default mode)
+
+    // Navigator (only in Default mode)
     EffectAdjust, // Enc3 rotate
 
     // Direct mappings

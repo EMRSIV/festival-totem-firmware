@@ -9,7 +9,6 @@ struct ButtonState
 {
     bool pressed = false;
     uint32_t pressTime = 0;
-    bool holdActive = false;
 };
 
 class InputManager
@@ -24,11 +23,14 @@ private:
     uint8_t count;
     Pot *pot;
 
-    static const uint32_t HOLD_TIME = 250; // was 500
+    static const uint32_t SAVE_HOLD_TIME = 5000; // 5 seconds for save combo
 
     int32_t lastDet[5];
     ButtonState btn[5];
     uint8_t lastPot = 0;
+
+    uint32_t saveComboStartTime = 0;
+    bool saveComboActive = false;
 
     void checkEncoder(uint8_t i, InputEvent &e);
     void checkPot(InputEvent &e);

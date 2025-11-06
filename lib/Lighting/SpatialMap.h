@@ -10,7 +10,7 @@ struct Vec3
 class SpatialMap
 {
 public:
-    SpatialMap(uint16_t totalLEDs, uint8_t holes,
+    SpatialMap(uint16_t totalLEDs, uint8_t ledSegments,
                float radiusCm, float spacingCm,
                bool clockwise = true);
 
@@ -20,7 +20,7 @@ public:
 
 private:
     uint16_t totalLEDs;
-    uint8_t holeCount;
+    uint8_t ledStringSegments;
     float radius;
     float spacing;
     bool cw;

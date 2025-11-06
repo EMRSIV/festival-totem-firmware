@@ -6,8 +6,7 @@ https://chatgpt.com/c/68fa7fba-aa5c-8329-8544-3c31ef0e5c5c
 
 
 TODO for V0.0.1
-- If the Strobe button (enc5) is pressed down and the user rotates enc1 the strobe color hue should change. And if enc1 is also pressed down at the same time the strobe color saturation should change.
-- If enc4 (intensity) is pressed down special effect 2 should be activated (like a flashbang)
+-
 ...
 
 ## Special Effects
@@ -25,19 +24,48 @@ Normal Effects:
 
 ## Controls
 
-| Control | Mode                     | Result                     |
-|---------|--------------------------|----------------------------|
-| Enc1    | turn                     | Main hue                   |
-| Enc1    | hold + turn              | Main saturation            |
-| Enc2    | turn                     | Secondary hue              |
-| Enc2    | hold + turn              | Secondary saturation       |
-| Enc2    | press                    | Toggle secondary ON/OFF    |
-| Enc3    | turn                     | Effect switch              |
-| Enc4    | turn                     | Intensity                  |
-| Enc5    | turn                     | Speed                      |
-| Enc5    | press & hold             | Strobe ON instantly        |
-| Enc5    | rotate while pressed     | Strobe speed adjust        |
-| Pot     | move                     | Brightness                 |
+### Control Behavior Matrix
+
+Each mode (Default + 3 Special Effects) has its own independent config that can be adjusted and persisted.
+
+| Encoder | Default Mode | Special1 (Strobe) | Special2 (Energy) | Special3 (Emergency) |
+|---------|-------------|-------------------|-------------------|---------------------|
+| **Enc1** turn | Main hue | **Strobe hue** | Main hue | Main hue |
+| **Enc1** hold+turn | Main sat | **Strobe sat** | Main sat | Main sat |
+| **Enc2** turn | Secondary hue | Secondary hue | Secondary hue | Secondary hue |
+| **Enc2** hold+turn | Secondary sat | Secondary sat | Secondary sat | Secondary sat |
+| **Enc2** press | **Toggle secondary** | *Disabled* | *Disabled* | *Disabled* |
+| **Enc3** turn | **Effect switch** | *Disabled* | *Disabled* | *Disabled* |
+| **Enc3** hold | - | - | - | **Activate Special3** |
+| **Enc4** turn | Intensity | Intensity | **Energy level** | Intensity |
+| **Enc4** press | - | - | **Toggle state** | - |
+| **Enc5** turn | Speed | **Strobe speed** | Speed | **Emergency speed** |
+| **Enc5** hold | **Activate Special1** | - | - | - |
+| **Pot** move | Brightness (global) | Brightness | Brightness | Brightness |
+
+**Special Combo:**
+- **Enc4 + Enc5** held together for **5 seconds** → Save all configs to flash (green strobe feedback)
+
+### Special Effect Details
+
+**Special1 - Strobe (Enc5 hold):**
+- Adjustable color strobe (default white)
+- Release Enc5 → return to Default mode
+- Adjusted parameters persist to Special1 config
+
+**Special2 - Energy Burst (Enc4 press):**
+- **State 1:** Press Enc4 → Enter BuildingUp mode
+  - Spinning point rises with intensity (0=bottom, 255=top)
+  - Pixels below = 50% brightness, above = off
+- **State 2:** Press Enc4 again
+  - If intensity ≤ 95% → Stop, return to Default
+  - If intensity > 95% → Explode (2s fast main LED alternating), then auto-return
+
+**Special3 - Emergency Lights (Enc3 hold):**
+- Blue/red rotating pattern on hanging LEDs
+- Main LEDs smoothly fade blue ↔ red
+- Speed adjustable
+- Release Enc3 → return to Default mode
 
 Interaction feels snappy + musical 🎶
 

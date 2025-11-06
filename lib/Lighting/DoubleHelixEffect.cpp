@@ -8,12 +8,12 @@ void DoubleHelixEffect::render(const LightingParams &P,
                                CRGB *detailLeds, uint16_t nDetail,
                                uint32_t now)
 {
-    float t = now * (0.0005f + (P.speed * 0.000003f));
+    float t = now * (0.0005f + (P.speed() * 0.000003f));
 
-    CRGB pri = CHSV(P.mainHue, P.mainSat, P.intensity);
-    CRGB sec = CHSV(P.secondaryHue, P.secondarySat, P.intensity);
+    CRGB pri = CHSV(P.mainHue(), P.mainSat(), P.intensity());
+    CRGB sec = CHSV(P.secondaryHue(), P.secondarySat(), P.intensity());
 
-    if (!P.secondaryEnabled)
+    if (!P.secondaryEnabled())
         sec = pri;
 
     // ---- MAIN ELEMENT (2 LEDs) ----

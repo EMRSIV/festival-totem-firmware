@@ -3,57 +3,65 @@
 
 bool InputMapper::apply(const InputEvent &e, LightingParams &P)
 {
+    if (!P.activeConfig)
+    {
+        Serial.println("ERROR: activeConfig is null!");
+        return false;
+    }
+
     switch (e.action)
     {
+    // Adjustments routed to activeConfig
     case InputAction::MainHueAdjust:
-        P.mainHue += e.value * 3;
+        P.activeConfig->mainHue += e.value * 3;
         break;
     case InputAction::MainSatAdjust:
-        P.mainSat = constrain(P.mainSat + e.value * 5, 0, 255);
+        P.activeConfig->mainSat = constrain(P.activeConfig->mainSat + e.value * 5, 0, 255);
         break;
 
     case InputAction::SecondaryHueAdjust:
-        P.secondaryHue += e.value * 3;
+        P.activeConfig->secondaryHue += e.value * 3;
         break;
     case InputAction::SecondarySatAdjust:
-        P.secondarySat = constrain(P.secondarySat + e.value * 5, 0, 255);
+        P.activeConfig->secondarySat = constrain(P.activeConfig->secondarySat + e.value * 5, 0, 255);
         break;
 
     case InputAction::IntensityAdjust:
-        P.intensity = constrain(P.intensity + e.value * 4, 0, 255);
-        break;
-    case InputAction::Special1Adjust:
-        P.special1 = e.value > 0; // TODO: refine to param later
+        P.activeConfig->intensity = constrain(P.activeConfig->intensity + e.value * 4, 0, 255);
         break;
 
     case InputAction::SpeedAdjust:
-        P.speed = constrain(P.speed + e.value * 4, 0, 255);
-        break;
-    case InputAction::Special2Adjust:
-        P.special2 = e.value > 0;
+        P.activeConfig->speed = constrain(P.activeConfig->speed + e.value * 4, 0, 255);
         break;
 
+    // Effect switching (only in Default mode)
     case InputAction::EffectAdjust:
-        P.effectID += e.value;
+        if (P.activeMode == ConfigMode::Default)
+        {
+            P.effectID += e.value;
+        }
         break;
 
+    // Toggle secondary (only in Default mode)
     case InputAction::ToggleSecondaryColor:
-        P.secondaryEnabled = !P.secondaryEnabled;
-        Serial.printf("Secondary: %s\n", P.secondaryEnabled ? "ON" : "OFF");
+        if (P.activeMode == ConfigMode::Default)
+        {
+            P.activeConfig->secondaryEnabled = !P.activeConfig->secondaryEnabled;
+            Serial.printf("Secondary: %s\n", P.activeConfig->secondaryEnabled ? "ON" : "OFF");
+        }
         break;
 
-    case InputAction::StrobeHoldStart:
-        P.strobe = true;
-        break;
+    // Mode switching events (handled in main.cpp)
+    case InputAction::EnterSpecial1:
+    case InputAction::ExitSpecial1:
+    case InputAction::EnterSpecial2:
+    case InputAction::EnterSpecial3:
+    case InputAction::ExitSpecial3:
+    case InputAction::SaveConfigs:
+        // These are handled by main.cpp, not here
+        return true;
 
-    case InputAction::StrobeHoldEnd:
-        P.strobe = false;
-        break;
-
-    case InputAction::StrobeSpeedAdjust:
-        P.strobeSpeed = constrain((int)P.strobeSpeed + e.value * 6, 0, 255); // step size 6; tune to taste
-        break;
-
+    // Global settings
     case InputAction::BrightnessDirect:
         P.brightness = e.value;
         break;

@@ -6,10 +6,10 @@ void SolidColorEffect::render(const LightingParams &P,
                               CRGB *detailLeds, uint16_t nDetail,
                               uint32_t)
 {
-    CRGB pri = CHSV(P.mainHue, P.mainSat, P.intensity);
-    CRGB sec = CHSV(P.secondaryHue, P.secondarySat, P.intensity);
+    CRGB pri = CHSV(P.mainHue(), P.mainSat(), P.intensity());
+    CRGB sec = CHSV(P.secondaryHue(), P.secondarySat(), P.intensity());
 
-    if (!P.secondaryEnabled)
+    if (!P.secondaryEnabled())
     {
         // Primary everywhere
         fill_solid(mainLeds, nMain, pri);

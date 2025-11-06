@@ -27,18 +27,18 @@ public:
         dirty = false;
 
         Serial.println("\n--- EMRSIV Lighting State ---");
+        Serial.printf("Mode          : %d\n", (int)P.activeMode);
         Serial.printf("Effect        : %s\n", fx.activeName());
-        Serial.printf("Main Color    : H=%3u S=%3u\n", P.mainHue, P.mainSat);
+        Serial.printf("Main Color    : H=%3u S=%3u\n", P.mainHue(), P.mainSat());
 
-        Serial.printf("Secondary     : %s\n", P.secondaryEnabled ? "ON" : "OFF");
-        Serial.printf("Sec Color     : H=%3u S=%3u\n", P.secondaryHue, P.secondarySat);
+        Serial.printf("Secondary     : %s\n", P.secondaryEnabled() ? "ON" : "OFF");
+        Serial.printf("Sec Color     : H=%3u S=%3u\n", P.secondaryHue(), P.secondarySat());
 
-        Serial.printf("Intensity     : %3u\n", P.intensity);
-        Serial.printf("Speed         : %3u\n", P.speed);
+        Serial.printf("Intensity     : %3u\n", P.intensity());
+        Serial.printf("Speed         : %3u\n", P.speed());
         Serial.printf("Brightness    : %3u\n", P.brightness);
-        if (P.strobe)
+        if (P.strobeActive)
             Serial.print("(STROBE) ");
-        Serial.printf("Strobe        : %s  (spd=%3u)\n", P.strobe ? "ON (HOLD)" : "OFF", P.strobeSpeed);
         Serial.println("-------------------------------");
     }
 
