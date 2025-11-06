@@ -7,39 +7,37 @@ ConfigManager::ConfigManager()
       bootEffectID(0)
 {
     // Initialize default configs with sensible values
-    // Default mode
-    configs[0].mainHue = 0;
-    configs[0].mainSat = 255;
-    configs[0].secondaryHue = 128;
-    configs[0].secondarySat = 255;
-    configs[0].speed = 100;
-    configs[0].intensity = 255;
-    configs[0].secondaryEnabled = true;
+    // Default mode - uses struct defaults from EffectConfig.h
+    // (speed=127 ~50%, intensity=0)
 
     // Special1 - Strobe (default white)
     configs[1].mainHue = 0;
     configs[1].mainSat = 0; // White
-    configs[1].speed = 128;
+    configs[1].speed = 248;
+    configs[1].intensity = 255;
+    configs[1].secondaryEnabled = false;
 
     // Special2 - Energy Burst
-    configs[2].mainHue = 160; // Blue-ish
+    configs[2].mainHue = 246; // Blue-ish
     configs[2].mainSat = 255;
-    configs[2].speed = 150;
-    configs[2].intensity = 128;
+    configs[2].secondaryHue = 31; // Orange for droplets
+    configs[2].secondarySat = 180;
+    configs[2].speed = 127;   // 50%
+    configs[2].intensity = 0; // Mid-height
+    configs[2].secondaryEnabled = true;
 
     // Special3 - Emergency
-    configs[3].speed = 100;
+    configs[3].speed = 127;
+    configs[3].intensity = 255;
+    configs[3].secondaryEnabled = false;
 }
 
 void ConfigManager::begin()
 {
     prefs.begin("totem", false); // Read-write mode
 
-    // Load all configs from NVS
-    for (int i = 0; i < 4; i++)
-    {
-        loadConfig((ConfigMode)i);
-    }
+    // Load only Default config from NVS (special configs are runtime-only)
+    loadConfig(ConfigMode::Default);
 
     // Load boot effect ID
     bootEffectID = prefs.getUChar("boot_fx", 0);
@@ -49,11 +47,8 @@ void ConfigManager::begin()
 
 void ConfigManager::save()
 {
-    // Save all configs
-    for (int i = 0; i < 4; i++)
-    {
-        saveConfig((ConfigMode)i);
-    }
+    // Save only Default config (special configs are runtime-only)
+    saveConfig(ConfigMode::Default);
 
     // Save boot effect ID
     prefs.putUChar("boot_fx", bootEffectID);

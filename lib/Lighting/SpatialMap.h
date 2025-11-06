@@ -17,6 +17,7 @@ public:
     void begin();
     const Vec3 &pos(uint16_t index) const { return coords[index]; }
     uint16_t count() const { return totalLEDs; }
+    uint8_t segments() const { return ledStringSegments; }
 
 private:
     uint16_t totalLEDs;
