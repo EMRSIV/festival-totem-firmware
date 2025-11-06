@@ -43,7 +43,7 @@ SpatialMap spatial(DETAIL_LEDS_COUNT, DISC_LED_STRING_COUNT, DISC_RADIUS_CM, LED
 static const uint8_t DET = 4, DB = 10;
 
 Encoder enc1(21, 22, 0, true, DET, DB);
-Encoder enc2(16, 17, 32, true, DET, DB);
+Encoder enc2(16, 17, 33, true, DET, DB);
 Encoder enc3(13, 14, 4, true, DET, DB);
 Encoder enc4(18, 19, 5, true, DET, DB);
 Encoder enc5(23, 25, 15, true, DET, DB);
@@ -73,7 +73,7 @@ EmergencyEffect emergencyFx;
 LightingParams P;
 
 // ============ Boot Animation ============
-uint8_t bootHue = 0;
+#define BOOT_SEQUENCE_LENGTH 500
 uint32_t bootStart;
 bool bootActive = true;
 
@@ -81,16 +81,37 @@ void bootAnimation(uint32_t now)
 {
     if (!bootActive)
         return;
-    if (now - bootStart > 3000)
+    if (now - bootStart > BOOT_SEQUENCE_LENGTH)
     {
         bootActive = false;
         ledEngine.clearAll();
         FastLED.show();
         return;
     }
-    fill_rainbow(mainLeds, MAIN_LEDS_COUNT, bootHue, 8);
-    fill_rainbow(detailLeds, DETAIL_LEDS_COUNT, bootHue + 64, 4);
-    bootHue++;
+
+    // Simple strobe: main color on main LEDs, secondary on detail LEDs, alternating
+    uint32_t elapsed = now - bootStart;
+    uint16_t period = BOOT_SEQUENCE_LENGTH / 20;
+    bool showMain = ((elapsed / period) % 2) == 0;
+
+    // Use default config colors
+    EffectConfig &defaultConfig = configMgr.getConfig(ConfigMode::Default);
+    CRGB mainColor = CHSV(defaultConfig.mainHue, defaultConfig.mainSat, 255);
+    CRGB secondaryColor = CHSV(defaultConfig.secondaryHue, defaultConfig.secondarySat, 255);
+
+    if (showMain)
+    {
+        // Main color phase: main LEDs lit, detail LEDs off
+        fill_solid(mainLeds, MAIN_LEDS_COUNT, mainColor);
+        fill_solid(detailLeds, DETAIL_LEDS_COUNT, CRGB::Black);
+    }
+    else
+    {
+        // Secondary color phase: detail LEDs lit, main LEDs off
+        fill_solid(mainLeds, MAIN_LEDS_COUNT, CRGB::Black);
+        fill_solid(detailLeds, DETAIL_LEDS_COUNT, secondaryColor);
+    }
+
     FastLED.show();
 }
 
@@ -158,6 +179,11 @@ void setup()
     ledEngine.begin();
     ledEngine.setPowerLimit(5, MAX_MA);
 
+    // Clear all LEDs immediately
+    fill_solid(mainLeds, MAIN_LEDS_COUNT, CRGB::Black);
+    fill_solid(detailLeds, DETAIL_LEDS_COUNT, CRGB::Black);
+    FastLED.show();
+
     spatial.begin();
 
     // Initialize config system
@@ -199,11 +225,20 @@ void loop()
         switch (ev.action)
         {
         case InputAction::EnterSpecial1: // Enc5 pressed
+            // Cancel EnergyBurst if active
+            if (P.energyBurstState != EnergyBurstState::Inactive)
+            {
+                P.energyBurstState = EnergyBurstState::Inactive;
+                energyBurstFx.reset();
+                // Reset intensity to zero
+                configMgr.getConfig(ConfigMode::Special2_EnergyBurst).intensity = 0;
+            }
             configMgr.setMode(ConfigMode::Special1_Strobe);
             P.activeConfig = &configMgr.getActiveConfig();
             P.activeMode = ConfigMode::Special1_Strobe;
             P.strobeActive = true;
             Serial.println("→ Special1: Strobe ON");
+            hud.markDirty();
             break;
 
         case InputAction::ExitSpecial1: // Enc5 released
@@ -212,6 +247,7 @@ void loop()
             P.activeMode = ConfigMode::Default;
             P.strobeActive = false;
             Serial.println("→ Default mode");
+            hud.markDirty();
             break;
 
         case InputAction::EnterSpecial2: // Enc4 pressed
@@ -227,6 +263,7 @@ void loop()
                 P.energyBurstState = EnergyBurstState::BuildingUp;
                 energyBurstFx.setState(EnergyBurstState::BuildingUp);
                 Serial.println("→ Special2: Energy BuildUp");
+                hud.markDirty();
             }
             else if (currentState == EnergyBurstState::BuildingUp)
             {
@@ -238,6 +275,7 @@ void loop()
                     energyBurstFx.setState(EnergyBurstState::Exploding);
                     P.explosionStartTime = now;
                     Serial.println("→ Special2: EXPLOSION!");
+                    hud.markDirty();
                 }
                 else
                 {
@@ -247,18 +285,30 @@ void loop()
                     P.activeMode = ConfigMode::Default;
                     P.energyBurstState = EnergyBurstState::Inactive;
                     energyBurstFx.reset();
+                    // Reset intensity to zero
+                    configMgr.getConfig(ConfigMode::Special2_EnergyBurst).intensity = 0;
                     Serial.println("→ Default mode (Energy cancelled)");
+                    hud.markDirty();
                 }
             }
             break;
         }
 
         case InputAction::EnterSpecial3: // Enc3 pressed
+            // Cancel EnergyBurst if active
+            if (P.energyBurstState != EnergyBurstState::Inactive)
+            {
+                P.energyBurstState = EnergyBurstState::Inactive;
+                energyBurstFx.reset();
+                // Reset intensity to zero
+                configMgr.getConfig(ConfigMode::Special2_EnergyBurst).intensity = 0;
+            }
             configMgr.setMode(ConfigMode::Special3_Emergency);
             P.activeConfig = &configMgr.getActiveConfig();
             P.activeMode = ConfigMode::Special3_Emergency;
             P.emergencyActive = true;
             Serial.println("→ Special3: Emergency Lights ON");
+            hud.markDirty();
             break;
 
         case InputAction::ExitSpecial3: // Enc3 released
@@ -267,6 +317,7 @@ void loop()
             P.activeMode = ConfigMode::Default;
             P.emergencyActive = false;
             Serial.println("→ Default mode");
+            hud.markDirty();
             break;
 
         case InputAction::SaveConfigs: // Enc4 + Enc5 held 5s
@@ -285,6 +336,8 @@ void loop()
                 {
                     hud.markDirty();
                 }
+                // Mark dirty for any parameter changes
+                hud.markDirty();
             }
             break;
         }
@@ -300,7 +353,10 @@ void loop()
             P.activeMode = ConfigMode::Default;
             P.energyBurstState = EnergyBurstState::Inactive;
             energyBurstFx.reset();
+            // Reset intensity to zero
+            configMgr.getConfig(ConfigMode::Special2_EnergyBurst).intensity = 0;
             Serial.println("→ Default mode (Explosion complete)");
+            hud.markDirty();
         }
     }
 

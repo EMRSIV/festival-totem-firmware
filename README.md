@@ -1,14 +1,6 @@
 
 <h1><img src="firmware.elf.png" alt="Logo" width="30"/> Festival Totem Firmware <img src="firmware.elf.png" alt="Logo" width="30"/></h1>
 
-Continue:
-https://chatgpt.com/c/68fa7fba-aa5c-8329-8544-3c31ef0e5c5c
-
-
-TODO for V0.0.1
--
-...
-
 ## Special Effects
 
 enc5 (Press down): Strobe
@@ -113,13 +105,13 @@ Interaction feels snappy + musical 🎶
                         ┌───────---───────┐
                   3V3 - │3V3            VN│ -
                   GND - │GND    Top    GND│ -
-                        │D15           D13│ - Enc 3 A
+              Enc 5 SW- │D15           D13│ - Enc 3 A
                         │D2            D12│ -
-                        │D4            D14│ - Enc 3 B
+              Enc 3 SW- │D3            D14│ - Enc 3 B
               Enc 2 A - │D16           D27│ - LED 1 DATA
               Enc 2 B - │D17           D26│ - LED 2 DATA
-                        │D5            D25│ - Enc 5 B
-              Enc 4 A - │D18           D33│
+              Enc 4 SW- │D5            D25│ - Enc 5 B
+              Enc 4 A - │D18           D33│ - Enc 2 SW
               Enc 4 B - |D19           D32│
               Enc 1 A - |D21           D35│
                         |RX0           D34│
@@ -127,6 +119,7 @@ Interaction feels snappy + musical 🎶
               Enc 1 B - |D22            VP│ - Poti B10K (B103)
               Enc 5 A - |D23            EN│
                         └─────────────────┘
+                      Enc 1 SW is on BOOT button
 ```
 
 ### EC11 Rotary Encoder
