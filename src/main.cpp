@@ -18,7 +18,7 @@
 // ============ LED Setup ============
 
 #define MAIN_COUNT 2
-#define DETAIL_COUNT 300
+#define DETAIL_COUNT 240
 
 CRGB mainLeds[MAIN_COUNT];
 CRGB detailLeds[DETAIL_COUNT];
@@ -28,7 +28,7 @@ LedEngine ledEngine(mainLeds, MAIN_COUNT, detailLeds, DETAIL_COUNT);
 SerialHUD hud;
 
 // Power safety
-static const uint16_t MAX_MA = 1500;
+static const uint16_t MAX_MA = 400;
 
 // ============ Spatial Map ============
 SpatialMap spatial(DETAIL_COUNT, 10, 10.0f, 3.0f, true);
@@ -36,9 +36,9 @@ SpatialMap spatial(DETAIL_COUNT, 10, 10.0f, 3.0f, true);
 // ============ Encoders ============
 static const uint8_t DET = 4, DB = 10;
 
-Encoder enc1(13, 14, 0, true, DET, DB);
+Encoder enc1(21, 22, 0, true, DET, DB);
 Encoder enc2(16, 17, 32, true, DET, DB);
-Encoder enc3(21, 22, 4, true, DET, DB);
+Encoder enc3(13, 14, 4, true, DET, DB);
 Encoder enc4(18, 19, 5, true, DET, DB);
 Encoder enc5(23, 25, 15, true, DET, DB);
 
