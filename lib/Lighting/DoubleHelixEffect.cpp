@@ -37,8 +37,9 @@ void DoubleHelixEffect::render(const LightingParams &P,
     CRGB pri = CHSV(P.mainHue(), P.mainSat(), 255);
     CRGB sec = CHSV(P.secondaryHue(), P.secondarySat(), 255);
 
+    // When secondary is disabled, use black instead of main color
     if (!P.secondaryEnabled())
-        sec = pri;
+        sec = CRGB::Black;
 
     // ---- MAIN ELEMENT (2 LEDs) ----
     for (int i = 0; i < nMain; i++)

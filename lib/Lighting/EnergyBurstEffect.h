@@ -16,10 +16,35 @@ public:
 
     void reset();
 
+    // Configure secondary color brightness scaling
+    void setSecondaryBrightnessRange(uint8_t minBrightness, uint8_t maxBrightness)
+    {
+        secondaryBrightnessMin = minBrightness;
+        secondaryBrightnessMax = maxBrightness;
+    }
+
+    uint8_t getSecondaryBrightnessMin() const { return secondaryBrightnessMin; }
+    uint8_t getSecondaryBrightnessMax() const { return secondaryBrightnessMax; }
+
+    // Configure explosion height threshold (0.0 = bottom, 1.0 = top)
+    void setExplosionHeightThreshold(float threshold)
+    {
+        explosionHeightThreshold = threshold;
+    }
+
+    float getExplosionHeightThreshold() const { return explosionHeightThreshold; }
+
 private:
     EnergyBurstState state = EnergyBurstState::Inactive;
     uint32_t explosionStartTime = 0;
     float angle = 0.0f; // Current angle of spinning point
+
+    // Secondary color brightness scaling (0-255)
+    uint8_t secondaryBrightnessMin = 0;
+    uint8_t secondaryBrightnessMax = 40;
+
+    // Explosion height threshold (0.0 = bottom, 1.0 = top)
+    float explosionHeightThreshold = 0.2f;
 
     // Droplet tracking
     struct Droplet

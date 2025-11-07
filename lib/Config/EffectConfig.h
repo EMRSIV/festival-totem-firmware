@@ -8,8 +8,8 @@ struct EffectConfig
     uint8_t mainSat = 255;
     uint8_t secondaryHue = 128;
     uint8_t secondarySat = 255;
-    // Default speed ~50% (0-255 scale)
-    uint8_t speed = 127;
+    // Default speed ~120 BPM for SphereEffect (0-255 scale maps to 50-180 BPM)
+    uint8_t speed = 137;
     // Default intensity
     uint8_t intensity = 127;
     bool secondaryEnabled = true;

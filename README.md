@@ -112,14 +112,13 @@ Interaction feels snappy + musical 🎶
               Enc 2 B - │D17           D26│ - LED 2 DATA
               Enc 4 SW- │D5            D25│ - Enc 5 B
               Enc 4 A - │D18           D33│ - Enc 2 SW
-              Enc 4 B - |D19           D32│
+              Enc 4 B - |D19           D32│ - Enc 1 SW
               Enc 1 A - |D21           D35│
                         |RX0           D34│
                         |TX0            VN│
               Enc 1 B - |D22            VP│ - Poti B10K (B103)
               Enc 5 A - |D23            EN│
                         └─────────────────┘
-                      Enc 1 SW is on BOOT button
 ```
 
 ### EC11 Rotary Encoder

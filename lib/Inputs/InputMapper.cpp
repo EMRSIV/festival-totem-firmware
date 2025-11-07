@@ -13,25 +13,25 @@ bool InputMapper::apply(const InputEvent &e, LightingParams &P)
     {
     // Adjustments routed to activeConfig
     case InputAction::MainHueAdjust:
-        P.activeConfig->mainHue += e.value * 3;
+        P.activeConfig->mainHue += e.value;
         break;
     case InputAction::MainSatAdjust:
-        P.activeConfig->mainSat = constrain(P.activeConfig->mainSat + e.value * 5, 0, 255);
+        P.activeConfig->mainSat = constrain(P.activeConfig->mainSat + e.value, 0, 255);
         break;
 
     case InputAction::SecondaryHueAdjust:
-        P.activeConfig->secondaryHue += e.value * 3;
+        P.activeConfig->secondaryHue += e.value;
         break;
     case InputAction::SecondarySatAdjust:
-        P.activeConfig->secondarySat = constrain(P.activeConfig->secondarySat + e.value * 5, 0, 255);
+        P.activeConfig->secondarySat = constrain(P.activeConfig->secondarySat + e.value, 0, 255);
         break;
 
     case InputAction::IntensityAdjust:
-        P.activeConfig->intensity = constrain(P.activeConfig->intensity + e.value * 4, 0, 255);
+        P.activeConfig->intensity = constrain(P.activeConfig->intensity + e.value, 0, 255);
         break;
 
     case InputAction::SpeedAdjust:
-        P.activeConfig->speed = constrain(P.activeConfig->speed + e.value * 4, 0, 255);
+        P.activeConfig->speed = constrain(P.activeConfig->speed + e.value, 0, 255);
         break;
 
     // Effect switching (only in Default mode)

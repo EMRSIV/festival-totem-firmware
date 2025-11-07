@@ -75,8 +75,16 @@ void EnergyBurstEffect::render(const LightingParams &P, const SpatialMap &map,
         // Main color for spinning point, detail color for background and droplets
         CRGB mainColor = CHSV(P.activeConfig->mainHue, P.activeConfig->mainSat, 255);
         CRGB detailColor = CHSV(P.activeConfig->secondaryHue, P.activeConfig->secondarySat, 255);
+
+        // Calculate secondary brightness based on intensity
+        // At intensity=0: use secondaryBrightnessMin
+        // At intensity=255: use secondaryBrightnessMax
+        float intensityRatio = P.activeConfig->intensity / 255.0f;
+        uint8_t secondaryBrightness = secondaryBrightnessMin +
+                                      (uint8_t)((secondaryBrightnessMax - secondaryBrightnessMin) * intensityRatio);
+
         CRGB dimColor = detailColor;
-        dimColor.nscale8(51); // 20% brightness (51/255 ≈ 0.2)
+        dimColor.nscale8(secondaryBrightness);
 
         // Clear LEDs
         fill_solid(detailLeds, detailCount, CRGB::Black);
@@ -240,9 +248,9 @@ void EnergyBurstEffect::render(const LightingParams &P, const SpatialMap &map,
                 if (fadeRatio < 0.0f)
                     fadeRatio = 0.0f;
 
-                // Apply linear fade: 0% at border to 20% at bottom
+                // Apply linear fade: 0% at border to secondaryBrightness at bottom
                 detailLeds[i] = detailColor;
-                uint8_t scaleFactor = (uint8_t)(fadeRatio * 51.0f); // 0 to 51 (20% of 255)
+                uint8_t scaleFactor = (uint8_t)(fadeRatio * secondaryBrightness);
                 detailLeds[i].nscale8(scaleFactor);
             }
         }

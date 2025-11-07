@@ -120,6 +120,26 @@ int32_t Encoder::getDetentCount()
     return (detentDiv ? (q / detentDiv) : q);
 }
 
+int32_t Encoder::getScaledDetentCount()
+{
+    // Get normalized detent count (1 per physical click)
+    int32_t detents = getDetentCount();
+
+    // Special case: rotations = -1 means each click = 1 unit
+    if (rotationsFor255 < 0.0f)
+    {
+        return detents;
+    }
+
+    // Scale based on rotations parameter
+    // Formula: sensitivity_per_click = 255 / (rotationsFor255 * DETENTS_PER_ROTATION)
+    // For example: rotations=1.0 → 255/(1.0*20) = 12.75 per click
+    //              rotations=0.5 → 255/(0.5*20) = 25.5 per click
+    float sensitivityPerClick = 255.0f / (rotationsFor255 * DETENTS_PER_ROTATION);
+
+    return (int32_t)(detents * sensitivityPerClick);
+}
+
 void Encoder::reset()
 {
     noInterrupts();

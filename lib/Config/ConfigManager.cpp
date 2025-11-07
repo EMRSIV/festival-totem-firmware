@@ -18,10 +18,10 @@ ConfigManager::ConfigManager()
     configs[1].secondaryEnabled = false;
 
     // Special2 - Energy Burst
-    configs[2].mainHue = 246; // Blue-ish
+    configs[2].mainHue = 2; // Blue-ish
     configs[2].mainSat = 255;
-    configs[2].secondaryHue = 31; // Orange for droplets
-    configs[2].secondarySat = 180;
+    configs[2].secondaryHue = 250; // Orange for droplets
+    configs[2].secondarySat = 255;
     configs[2].speed = 127;   // 50%
     configs[2].intensity = 0; // Mid-height
     configs[2].secondaryEnabled = true;

@@ -15,7 +15,7 @@ void InputManager::begin()
     for (uint8_t i = 0; i < count; ++i)
     {
         encs[i]->begin();
-        lastDet[i] = encs[i]->getDetentCount();
+        lastDet[i] = encs[i]->getScaledDetentCount();
     }
     if (pot)
         pot->begin();
@@ -155,7 +155,7 @@ bool InputManager::poll(InputEvent &e)
         }
 
         // Rotational deltas
-        int32_t det = encs[i]->getDetentCount();
+        int32_t det = encs[i]->getScaledDetentCount();
         int delta = det - lastDet[i];
         if (delta != 0)
         {
